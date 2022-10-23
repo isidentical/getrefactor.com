@@ -15,7 +15,7 @@ async function startApplication() {
   self.pyodide.globals.set("sendPatch", sendPatch);
   console.log("Loaded!");
   await self.pyodide.loadPackage("micropip");
-  const env_spec = ['https://cdn.holoviz.org/panel/0.14.0/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.0/dist/wheels/panel-0.14.0-py3-none-any.whl', 'refactor==0.6.0']
+  const env_spec = ['https://cdn.holoviz.org/panel/0.14.0/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.0/dist/wheels/panel-0.14.0-py3-none-any.whl', 'refactor==0.6.1']
   for (const pkg of env_spec) {
     const pkg_name = pkg.split('/').slice(-1)[0].split('-')[0]
     self.postMessage({type: 'status', msg: `Installing ${pkg_name}`})
@@ -34,18 +34,17 @@ from panel.io.pyodide import init_doc, write_doc
 
 init_doc()
 
-import sys
 import ast
-import panel as pn
+import refactor
 import traceback
 
-sys.modules['_multiprocessing'] = object
+import panel as pn
 
 pn.config.sizing_mode = "stretch_both"
 pn.extension()
 
+
 def _format_with_refactor(rule_code: str, source_code: str) -> str:
-    import refactor
     ast.parse(source_code)
 
     namespace = {}
@@ -69,7 +68,9 @@ def _format_with_refactor(rule_code: str, source_code: str) -> str:
         lines.append(session.run(source_code))
     else:
         lines.append("# No rules found.")
-        lines.append("# Consider writing some rules (a class that inherits from refactor.Rule)")
+        lines.append(
+            "# Consider writing some rules (a class that inherits from refactor.Rule)"
+        )
 
     return "\\n".join(lines)
 

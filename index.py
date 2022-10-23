@@ -1,18 +1,14 @@
 import ast
-import sys
+import refactor
 import traceback
 
 import panel as pn
-
-sys.modules["_multiprocessing"] = object
 
 pn.config.sizing_mode = "stretch_both"
 pn.extension()
 
 
 def _format_with_refactor(rule_code: str, source_code: str) -> str:
-    import refactor
-
     ast.parse(source_code)
 
     namespace = {}

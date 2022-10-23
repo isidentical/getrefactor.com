@@ -8,13 +8,13 @@ subprocess.check_output(
         "--to",
         "pyodide-worker",
         "--out",
-        "build",
+        "docs",
         "--requirements",
-        "refactor==0.6.0",
+        "refactor==0.6.1",
     ]
 )
 
-with open("build/index.js") as stream:
+with open("docs/index.js") as stream:
     source_code = stream.read()
 
 source_code = source_code.replace(
@@ -22,5 +22,5 @@ source_code = source_code.replace(
     "json.loads(${JSON.stringify(msg.patch)})",
 )
 
-with open("build/index.js", "w") as stream:
+with open("docs/index.js", "w") as stream:
     stream.write(source_code)
