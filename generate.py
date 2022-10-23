@@ -10,7 +10,7 @@ subprocess.check_output(
         "--out",
         "docs",
         "--requirements",
-        "refactor==0.6.1",
+        "refactor==0.6.2",
     ]
 )
 

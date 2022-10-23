@@ -15,7 +15,7 @@ async function startApplication() {
   self.pyodide.globals.set("sendPatch", sendPatch);
   console.log("Loaded!");
   await self.pyodide.loadPackage("micropip");
-  const env_spec = ['https://cdn.holoviz.org/panel/0.14.0/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.0/dist/wheels/panel-0.14.0-py3-none-any.whl', 'refactor==0.6.1']
+  const env_spec = ['https://cdn.holoviz.org/panel/0.14.0/dist/wheels/bokeh-2.4.3-py3-none-any.whl', 'https://cdn.holoviz.org/panel/0.14.0/dist/wheels/panel-0.14.0-py3-none-any.whl', 'refactor==0.6.2']
   for (const pkg of env_spec) {
     const pkg_name = pkg.split('/').slice(-1)[0].split('-')[0]
     self.postMessage({type: 'status', msg: `Installing ${pkg_name}`})
@@ -42,56 +42,6 @@ import panel as pn
 
 pn.config.sizing_mode = "stretch_both"
 pn.extension()
-
-
-def _format_with_refactor(rule_code: str, source_code: str) -> str:
-    ast.parse(source_code)
-
-    namespace = {}
-    exec(rule_code, namespace)
-
-    rules = [
-        maybe_rule
-        for maybe_rule in namespace.values()
-        if isinstance(maybe_rule, type)
-        if issubclass(maybe_rule, refactor.Rule)
-        if maybe_rule is not refactor.Rule
-    ]
-
-    lines = []
-
-    if rules:
-        lines.append("# Active rules: " + ", ".join(rule.__name__ for rule in rules))
-        lines.append("")
-        lines.append("")
-        session = refactor.Session(rules=rules)
-        lines.append(session.run(source_code))
-    else:
-        lines.append("# No rules found.")
-        lines.append(
-            "# Consider writing some rules (a class that inherits from refactor.Rule)"
-        )
-
-    return "\\n".join(lines)
-
-
-def run_refactor(
-    rule_code: str,
-    source_code: str,
-) -> pn.widgets.Ace:
-    try:
-        refactored_source = _format_with_refactor(rule_code, source_code)
-        language = "python"
-    except Exception:
-        refactored_source = traceback.format_exc()
-        language = "text"
-
-    return pn.widgets.Ace(
-        value=refactored_source,
-        language=language,
-        readonly=True,
-    )
-
 
 refactor_template = """\
 import ast
@@ -167,6 +117,56 @@ source_editor = pn.widgets.Ace(
     value=source_code,
     language="python",
 )
+
+
+def _format_with_refactor(rule_code: str, source_code: str) -> str:
+    ast.parse(source_code)
+
+    namespace = {}
+    exec(rule_code, namespace)
+
+    rules = [
+        maybe_rule
+        for maybe_rule in namespace.values()
+        if isinstance(maybe_rule, type)
+        if issubclass(maybe_rule, refactor.Rule)
+        if maybe_rule is not refactor.Rule
+    ]
+
+    lines = []
+
+    if rules:
+        lines.append("# Active rules: " + ", ".join(rule.__name__ for rule in rules))
+        lines.append("")
+        lines.append("")
+        session = refactor.Session(rules=rules)
+        lines.append(session.run(source_code))
+    else:
+        lines.append("# No rules found.")
+        lines.append(
+            "# Consider writing some rules (a class that inherits from refactor.Rule)"
+        )
+
+    return "\\n".join(lines)
+
+
+def run_refactor(
+    rule_code: str,
+    source_code: str,
+) -> pn.widgets.Ace:
+    try:
+        refactored_source = _format_with_refactor(rule_code, source_code)
+        language = "python"
+    except Exception:
+        refactored_source = traceback.format_exc()
+        language = "text"
+
+    return pn.widgets.Ace(
+        value=refactored_source,
+        language=language,
+        readonly=True,
+    )
+
 
 result_editor = pn.bind(run_refactor, rule_editor, source_editor)
 
